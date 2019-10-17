@@ -1,3 +1,5 @@
+#%load_ext autoreload
+#%autoreload 2
 import yfinance as yf
 import matplotlib.pyplot as plt
 import numpy as np
