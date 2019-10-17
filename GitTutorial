@@ -1,0 +1,8 @@
+1. Go to Git init a repo
+2. press untrucked
+3. Create the repositorie in github
+4. Make the commit
+5. In the console git remote add origin git@github.com:gafarina/Finance.git
+6. In the console git push -u origin master
+7. Git push and git Pull
+
