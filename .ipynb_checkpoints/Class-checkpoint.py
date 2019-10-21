@@ -25,9 +25,15 @@ class ReturnOps:
         except:
             print('Error no existe la columna o el archivo esta en el formato incorrecto')
     def ComputeSeveralReturns(*kwargs):
+        '''
+        Funcion que calcula el return de varios Stocks con una columna
+        '''
         return returns
-    def AnnualizingReturn(self,Percentage,PerInAYear):
-        ret = (1+Percentage)**PerInAYear - 1
+    def AnnualizingReturn(self,PerReturn,PerInAYear):
+        '''
+        Funcion que calcula el retorno anualizado
+        '''
+        ret = (1+PerReturn)**PerInAYear - 1
         return ret
         
      
