@@ -46,11 +46,7 @@ class ReturnOps():
         returns = Base.pct_change()
         returns = returns.dropna()
         return returns
-        
-            
-            
-            
-        return None
+    
     def AnnualizingReturn(self,PerReturn,PerInAYear):
         '''
         Funcion que calcula el retorno anualizado
