@@ -16,7 +16,22 @@ class GetAndFormatTheData:
         except:
             print('Error El Ticker no existe')
             
-class ReturnOps:
+            
+    def GetDataFromYahooSeveral(self,start,end,period,columna,*args):
+        '''
+         Junta los Precios de varios Tickers
+        '''
+        Base = pd.DataFrame()
+        for i in args:
+            data = self.GetDataFromYahoo(i,start,end,period)[columna]
+            Base = pd.merge(Base,data,how='outer',left_index=True,right_index=True)
+            Base = Base.fillna(method='ffill')
+        Base.columns = args
+            
+            
+        return Base
+            
+class ReturnOps():
     def ComputeOnereturn(self,Base,columns):
         try:
             returns = Base[columns].pct_change()
@@ -24,11 +39,18 @@ class ReturnOps:
             return returns
         except:
             print('Error no existe la columna o el archivo esta en el formato incorrecto')
-    def ComputeSeveralReturns(*kwargs):
+    def ComputeSeveralReturns(self,Base):
         '''
-        Funcion que calcula el return de varios Stocks con una columna
+        Funcion que toma un dataframe de precios y calcula los retornos
         '''
+        returns = Base.pct_change()
+        returns = returns.dropna()
         return returns
+        
+            
+            
+            
+        return None
     def AnnualizingReturn(self,PerReturn,PerInAYear):
         '''
         Funcion que calcula el retorno anualizado
