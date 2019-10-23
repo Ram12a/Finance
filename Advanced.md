@@ -2,7 +2,7 @@
 
 * revisar la documentacion de las funciones
 
-* Crear el sharpe ratio,Portfolio Return,PotfolioVol,PlotPortfolio2Assets,Multiassets,That Achieve a return,Sharpe RatioPortfolio(lab106-lab11
+* Crear el sharpe ratio,Portfolio Return,PotfolioVol,PlotPortfolio2Assets,Multiassets,That Achieve a return,Sharpe RatioPortfolio(lab106-lab11)
 
 * Ver el tema de los logs returns (Para despues)
 

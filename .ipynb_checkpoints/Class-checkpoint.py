@@ -173,6 +173,49 @@ class ReturnOps():
                 )
         return -(r.mean() + z*r.std(ddof=0))
 
+class Portfolio(ReturnOps):
+    def sharpe_ratioAnnual(self,Base,riskfree_rate,periods_per_year):
+        """
+        Computes the annualized sharpe ratio of a set of returns
+        """
+        # convert the annual riskfree rate to per period
+        rf_per_period = (1+riskfree_rate)**(1/periods_per_year)-1
+        excess_ret = Base - rf_per_period
+        ann_ex_ret = self.AnnualizedMean(excess_ret,periods_per_year)
+        ann_vol = self.AnnualizedVol(Base,periods_per_year)
+        return ann_ex_ret/ann_vol
+    
+    
+    def portfolio_return(weights, returns):
+        """
+        Computes the return on a portfolio from constituent returns and weights
+        weights are a numpy array or Nx1 matrix and returns are a numpy array or Nx1 matrix
+        """
+        return weights.T @ returns
+    
+    def portfolio_vol(weights, covmat):
+        """
+        Computes the vol of a portfolio from a covariance matrix and constituent weights
+        weights are a numpy array or N x 1 maxtrix and covmat is an N x N matrix
+        """
+        return (weights.T @ covmat @ weights)**0.5
+    def plot_ef2(n_points, er, cov):
+        """
+        Plots the 2-asset efficient frontier
+        """
+        if er.shape[0] != 2 or er.shape[0] != 2:
+            raise ValueError("plot_ef2 can only plot 2-asset frontiers")
+        weights = [np.array([w, 1-w]) for w in np.linspace(0, 1, n_points)]
+        rets = [portfolio_return(w, er) for w in weights]
+        vols = [portfolio_vol(w, cov) for w in weights]
+        ef = pd.DataFrame({
+            "Returns": rets, 
+            "Volatility": vols
+        })
+        return ef.plot.line(x="Volatility", y="Returns", style=".-")
+
+
+
     
     
 
