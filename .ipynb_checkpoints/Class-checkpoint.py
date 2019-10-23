@@ -6,11 +6,9 @@ import numpy as np
 import pandas as pd
 import scipy.stats
 from scipy.stats import norm
+from scipy.optimize import minimize
 
-class GetAndFormatTheData:
-    #def __init__(self,Ticker):
-    #    self.Ticker = Ticker
-    
+class GetAndFormatTheData:    
     def GetDataFromYahoo(self,Ticker,start,end,period):
         try:
             data = yf.download(Ticker,start=start,end=end,period=period)
@@ -186,34 +184,78 @@ class Portfolio(ReturnOps):
         return ann_ex_ret/ann_vol
     
     
-    def portfolio_return(weights, returns):
+    def portfolio_return(self,weights,returns):
         """
         Computes the return on a portfolio from constituent returns and weights
         weights are a numpy array or Nx1 matrix and returns are a numpy array or Nx1 matrix
         """
         return weights.T @ returns
     
-    def portfolio_vol(weights, covmat):
+    def portfolio_vol(self,weights,covmat):
         """
         Computes the vol of a portfolio from a covariance matrix and constituent weights
         weights are a numpy array or N x 1 maxtrix and covmat is an N x N matrix
         """
         return (weights.T @ covmat @ weights)**0.5
-    def plot_ef2(n_points, er, cov):
+    
+    def plot_ef2(self,n_points,er,cov):
         """
         Plots the 2-asset efficient frontier
         """
         if er.shape[0] != 2 or er.shape[0] != 2:
             raise ValueError("plot_ef2 can only plot 2-asset frontiers")
         weights = [np.array([w, 1-w]) for w in np.linspace(0, 1, n_points)]
-        rets = [portfolio_return(w, er) for w in weights]
-        vols = [portfolio_vol(w, cov) for w in weights]
+        rets = [self.portfolio_return(w, er) for w in weights]
+        vols = [self.portfolio_vol(w, cov) for w in weights]
         ef = pd.DataFrame({
             "Returns": rets, 
             "Volatility": vols
         })
         return ef.plot.line(x="Volatility", y="Returns", style=".-")
 
+    
+    def minimize_vol(self,target_return,er,cov):
+        """
+        Returns the optimal weights that achieve the target return
+        given a set of expected returns and a covariance matrix
+        """
+        n = er.shape[0]
+        init_guess = np.repeat(1/n, n)
+        bounds = ((0.0, 1.0),) * n # an N-tuple of 2-tuples!
+        # construct the constraints
+        weights_sum_to_1 = {'type': 'eq',
+                            'fun': lambda weights: np.sum(weights) - 1
+        }
+        return_is_target = {'type': 'eq',
+                            'args': (er,),
+                            'fun': lambda weights, er: target_return - self.portfolio_return(weights,er)
+        }
+        weights = minimize(self.portfolio_vol, init_guess,
+                           args=(cov,), method='SLSQP',
+                           options={'disp': False},
+                           constraints=(weights_sum_to_1,return_is_target),
+                           bounds=bounds)
+        return weights.x
+    
+    def optimal_weights(self,n_points,er,cov):
+        """
+        """
+        target_rs = np.linspace(er.min(),er.max(),n_points)
+        weights = [self.minimize_vol(target_return, er, cov) for target_return in target_rs]
+        return weights
+
+    def plot_ef(self,n_points,er,cov):
+        """
+        Plots the multi-asset efficient frontier
+        """
+        weights = self.optimal_weights(n_points, er, cov) 
+        rets = [self.portfolio_return(w, er) for w in weights]
+        vols = [self.portfolio_vol(w, cov) for w in weights]
+        ef = pd.DataFrame({
+            "Returns": rets, 
+            "Volatility": vols
+        })
+        return ef.plot.line(x="Volatility", y="Returns", style='.-')
 
 
     
