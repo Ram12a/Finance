@@ -1,4 +1,4 @@
-## Siguientes Passos
+## Siguientes Pasos
 
 * revisar la documentacion de las funciones
 
@@ -11,10 +11,3 @@
 * Create MVP Application to create the best portfolio given a bunch of assets
 
 * Plot the Returns and price and compute some statistics (Drawdown,Kurtosis,Vol,Returns,Skweness,normality,CVAR,VAR,HistoricalVAr,SharpeRatio)
-
-
-## Detalles
-
-* Crear en la clase de retornos Var,CVAR y otros Var
-
-* 
