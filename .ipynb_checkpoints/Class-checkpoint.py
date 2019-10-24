@@ -149,13 +149,13 @@ class ReturnOps():
         is_negative = r < 0
         return r[is_negative].std(ddof=0)
     
-    def varhistoric(self,r, level=5):
+    def varhistoric(self,r,level=5):
         """
         Returns the historic Value at Risk at a specified level
         i.e. returns the number such that "level" percent of the returns
         fall below that number, and the (100-level) percent are above
         """
-        if isinstance(r, pd.DataFrame):
+        if isinstance(r,pd.DataFrame):
             return r.aggregate(self.varhistoric, level=level)
 
         elif isinstance(r, pd.Series):
@@ -163,19 +163,19 @@ class ReturnOps():
         else:
             raise TypeError("Expected r to be a Series or DataFrame")
     
-    def cvarhistoric(self,r, level=5):
+    def cvarhistoric(self,r,level=5):
         """
         Computes the Conditional VaR of Series or DataFrame
         """
-        if isinstance(r, pd.Series):
+        if isinstance(r,pd.Series):
             is_beyond = r <= -self.varhistoric(r, level=level)
             return -r[is_beyond].mean()
-        elif isinstance(r, pd.DataFrame):
+        elif isinstance(r,pd.DataFrame):
             return r.aggregate(self.cvarhistoric, level=level)
         else:
             raise TypeError("Expected r to be a Series or DataFrame")
     
-    def vargaussian(self,r, level=5, modified=False):
+    def vargaussian(self,r,level=5,modified=False):
         """
         Returns the Parametric Gauusian VaR of a Series or DataFrame
         If "modified" is True, then the modified VaR is returned,
@@ -262,23 +262,88 @@ class Portfolio(ReturnOps):
     
     def optimal_weights(self,n_points,er,cov):
         """
+        Returns a list of weights that represent a grid of n_points on the efficient frontier
         """
-        target_rs = np.linspace(er.min(),er.max(),n_points)
-        weights = [self.minimize_vol(target_return, er, cov) for target_return in target_rs]
+        target_rs = np.linspace(er.min(), er.max(),n_points)
+        weights = [self.minimize_vol(target_return,er,cov) for target_return in target_rs]
         return weights
+    
+    
+    def msr(self,riskfree_rate,er,cov):
+        """
+        Returns the weights of the portfolio that gives you the maximum sharpe ratio
+        given the riskfree rate and expected returns and a covariance matrix
+        """
+        n = er.shape[0]
+        init_guess = np.repeat(1/n, n)
+        bounds = ((0.0, 1.0),) * n # an N-tuple of 2-tuples!
+        # construct the constraints
+        weights_sum_to_1 = {'type': 'eq',
+                            'fun': lambda weights: np.sum(weights) - 1
+        }
+        def neg_sharpe(weights,riskfree_rate,er,cov):
+            
+            """
+            Returns the negative of the sharpe ratio
+            of the given portfolio
+            """
+            
+            r = self.portfolio_return(weights,er)
+            vol = self.portfolio_vol(weights,cov)
+            return -(r - riskfree_rate)/vol
 
-    def plot_ef(self,n_points,er,cov):
+        weights = minimize(neg_sharpe,init_guess,
+                           args=(riskfree_rate, er, cov), method='SLSQP',
+                           options={'disp': False},
+                           constraints=(weights_sum_to_1,),
+                           bounds=bounds)
+        return weights.x
+    
+    def gmv(self,cov):
+        """
+        Returns the weights of the Global Minimum Volatility portfolio
+        given a covariance matrix
+        """
+        n = cov.shape[0]
+        return self.msr(0,np.repeat(1,n),cov)
+    
+    def plot_ef(self,n_points,er,cov,style='.-',legend=False,show_cml=False,riskfree_rate=0,show_ew=False,show_gmv=False):
         """
         Plots the multi-asset efficient frontier
         """
-        weights = self.optimal_weights(n_points, er, cov) 
+        weights = self.optimal_weights(n_points,er,cov)
         rets = [self.portfolio_return(w, er) for w in weights]
         vols = [self.portfolio_vol(w, cov) for w in weights]
         ef = pd.DataFrame({
             "Returns": rets, 
             "Volatility": vols
         })
-        return ef.plot.line(x="Volatility", y="Returns", style='.-')
+        ax = ef.plot.line(x="Volatility", y="Returns",style=style,legend=legend)
+        if show_cml:
+            ax.set_xlim(left = 0)
+            # get MSR
+            w_msr = self.msr(riskfree_rate,er,cov)
+            r_msr = self.portfolio_return(w_msr,er)
+            vol_msr = self.portfolio_vol(w_msr,cov)
+            # add CML
+            cml_x = [0, vol_msr]
+            cml_y = [riskfree_rate,r_msr]
+            ax.plot(cml_x, cml_y,color='green',marker='o',linestyle='dashed',linewidth=2,markersize=10)
+        if show_ew:
+            n = er.shape[0]
+            w_ew = np.repeat(1/n, n)
+            r_ew = self.portfolio_return(w_ew,er)
+            vol_ew = self.portfolio_vol(w_ew,cov)
+            # add EW
+            ax.plot([vol_ew], [r_ew],color='goldenrod',marker='o',markersize=10)
+        if show_gmv:
+            w_gmv = self.gmv(cov)
+            r_gmv = self.portfolio_return(w_gmv,er)
+            vol_gmv = self.portfolio_vol(w_gmv,cov)
+            # add EW
+            ax.plot([vol_gmv],[r_gmv],color='midnightblue',marker='o',markersize=10)
+
+            return ax
 
 
     
