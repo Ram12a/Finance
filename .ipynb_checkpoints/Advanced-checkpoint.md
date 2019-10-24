@@ -12,4 +12,4 @@
 
 * Falta contestar el cuestionario 2 las dos ultimas preguntas, la segunda pregunta es 5 y en las dos ultimas la tasa libre de riesgo es 0.1 ver porque es 0.1
 
-* answer the question why the cov is not correlated
+* answer the question why the cov is not annualized
