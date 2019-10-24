@@ -8,24 +8,41 @@ import scipy.stats
 from scipy.stats import norm
 from scipy.optimize import minimize
 
-class GetAndFormatTheData:    
-    def GetDataFromYahoo(self,Ticker,start,end,period):
+class GetAndFormatTheData:
+    def GetDataFromYahoo(self,Ticker,start,end,interval):
+        '''
+          The function get the data from Yahoo finance
+    
+          Inputs: Ticker:string,date:string('YYYY-MM-DD'),
+    
+          period:string(1d,5d,1wk,1mo,3mo)
+    
+          output:return a data frame OHLS
+        '''
         try:
-            data = yf.download(Ticker,start=start,end=end,period=period)
+            data = yf.download(Ticker,start=start,end=end,interval=interval)
             return data
         except:
             print('Error El Ticker no existe')
             
             
-    def GetDataFromYahooSeveral(self,start,end,period,columna,*args):
+    def GetDataFromYahooSeveral(self,start,end,interval,columna,*args):
         '''
-         Junta los Precios de varios Tickers
+         The function get the data from Yahoo finance,join the columns and fill the values with the last value.
+    
+         Inputs: Ticker:string,date:string('YYYY-MM-DD'),period:string(1d,5d,1wk,1mo,3mo),columna:string.(Open,High,Low,Close,Adj Close,Volume),args: Several tickers
+    
+         output:return a data frame with the selected column and the tickers
         '''
         Base = pd.DataFrame()
         for i in args:
-            data = self.GetDataFromYahoo(i,start,end,period)[columna]
-            Base = pd.merge(Base,data,how='outer',left_index=True,right_index=True)
-            Base = Base.fillna(method='ffill')
+            assert isinstance(i,str),'The value is not string'
+            try:
+                data = self.GetDataFromYahoo(i,start,end,interval)[columna]
+                Base = pd.merge(Base,data,how='outer',left_index=True,right_index=True)
+                Base = Base.fillna(method='ffill')
+            except:
+                print("El Ticker no existe o no exsten datos en el Ticker %s"%(i))
         Base.columns = args
             
             
@@ -98,10 +115,16 @@ class ReturnOps():
         return Serie
     
     def AnnualizedVol(self,Base,Per):
+        '''
+         Per the number of period in a year
+        '''
         Base = self.VolReturn(Base)*np.sqrt(Per)
         return Base
     
     def AnnualizedMean(self,Base,DaysBase):
+        '''
+        The values should be divided by 100
+        '''
         Days = Base.shape[0]
         Base = (Base+1).prod()**(DaysBase/Days) - 1
         return Base
