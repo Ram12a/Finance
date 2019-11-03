@@ -10,4 +10,12 @@
 
 * answer the question why the cov is not annualized
 
-$$ x^2 $$
+
+## Semana 04-10 de noviembre
+
+* Continuar la clase de finanzas y terminar el cuestionario
+
+* Empezar la clase de machine learning (Primera semana)
+
+* Crear La clase de cluster de medium
+
