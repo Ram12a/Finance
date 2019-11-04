@@ -193,6 +193,27 @@ class ReturnOps():
                     (2*z**3 - 5*z)*(s**2)/36
                 )
         return -(r.mean() + z*r.std(ddof=0))
+    
+    def annualize_rets(r, periods_per_year):
+        """
+        Annualizes a set of returns
+        We should infer the periods per year
+        but that is currently left as an exercise
+        to the reader :-)
+        """
+        compounded_growth = (1+r).prod()
+        n_periods = r.shape[0]
+        return compounded_growth**(periods_per_year/n_periods)-1
+
+
+    def annualize_vol(r, periods_per_year):
+        """
+        Annualizes the vol of a set of returns
+        We should infer the periods per year
+        but that is currently left as an exercise
+        to the reader :-)
+        """
+        return r.std()*(periods_per_year**0.5)
 
 class Portfolio(ReturnOps):
     def sharpe_ratioAnnual(self,Base,riskfree_rate,periods_per_year):
