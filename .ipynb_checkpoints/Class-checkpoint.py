@@ -194,7 +194,7 @@ class ReturnOps():
                 )
         return -(r.mean() + z*r.std(ddof=0))
     
-    def annualize_rets(r, periods_per_year):
+    def annualize_rets(self,r, periods_per_year):
         """
         Annualizes a set of returns
         We should infer the periods per year
@@ -206,7 +206,7 @@ class ReturnOps():
         return compounded_growth**(periods_per_year/n_periods)-1
 
 
-    def annualize_vol(r, periods_per_year):
+    def annualize_vol(self,r,periods_per_year):
         """
         Annualizes the vol of a set of returns
         We should infer the periods per year
@@ -214,6 +214,19 @@ class ReturnOps():
         to the reader :-)
         """
         return r.std()*(periods_per_year**0.5)
+    
+    def RollingMeanAnnualizeReturn(self,BaseRet,windows,periodPerYear):
+        tmi_tr36rets = BaseRet.rolling(window=windows).aggregate(self.annualize_rets, periods_per_year=periodPerYear)
+        return tmi_tr36rets
+    
+    def RollingMeanCorr(self,BaseRet,windows):
+        BaseRet.index.name = 'date'
+        ts_corr = BaseRet.rolling(window=windows).corr()
+        ts_corr.index.name = 'date'
+        print(ts_corr.tail())
+        ind_tr36corr = ts_corr.groupby(level='date').apply(lambda cormat: cormat.values.mean())
+        return ind_tr36corr
+        
 
 class Portfolio(ReturnOps):
     def sharpe_ratioAnnual(self,Base,riskfree_rate,periods_per_year):

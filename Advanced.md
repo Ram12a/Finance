@@ -13,7 +13,7 @@
 
 ## Semana 04-10 de noviembre
 
-* Continuar la clase de finanzas y terminar el cuestionario
+* Continuar la clase de finanzas y terminar el cuestionario(Tengo que empezar el 119 copiar las funciones y despues aplicarlo a mi portfolio)
 
 * Empezar la clase de machine learning (Primera semana)
 
