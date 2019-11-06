@@ -41,7 +41,7 @@ def get_ind_file(filetype):
         name = "size"
         divisor = 1
                          
-    ind = pd.read_csv(f"/home/gaston/MachineLearning/ind30_m_{name}.csv", header=0, index_col=0)/divisor
+    ind = pd.read_csv(f"data/ind30_m_{name}.csv", header=0, index_col=0)/divisor
     ind.index = pd.to_datetime(ind.index, format="%Y%m").to_period('M')
     ind.columns = ind.columns.str.strip()
     return ind
@@ -206,7 +206,7 @@ def cvar_historic(r, level=5):
     Computes the Conditional VaR of Series or DataFrame
     """
     if isinstance(r, pd.Series):
-        is_beyond = r <= -var_historic(r, level=level)
+        is_beyond = r <= var_historic(r, level=level)
         return -r[is_beyond].mean()
     elif isinstance(r, pd.DataFrame):
         return r.aggregate(cvar_historic, level=level)
@@ -462,3 +462,26 @@ def summary_stats(r, riskfree_rate=0.03):
         "Sharpe Ratio": ann_sr,
         "Max Drawdown": dd
     })
+
+                         
+def gbm(n_years = 10, n_scenarios=1000, mu=0.07, sigma=0.15, steps_per_year=12, s_0=100.0):
+    """
+    Evolution of Geometric Brownian Motion trajectories, such as for Stock Prices through Monte Carlo
+    :param n_years:  The number of years to generate data for
+    :param n_paths: The number of scenarios/trajectories
+    :param mu: Annualized Drift, e.g. Market Return
+    :param sigma: Annualized Volatility
+    :param steps_per_year: granularity of the simulation
+    :param s_0: initial value
+    :return: a numpy array of n_paths columns and n_years*steps_per_year rows
+    """
+    # Derive per-step Model Parameters from User Specifications
+    dt = 1/steps_per_year
+    n_steps = int(n_years*steps_per_year) + 1
+    rets_plus_1 = np.random.normal(loc=mu*dt+1, scale=sigma*np.sqrt(dt), size=(n_steps, n_scenarios))
+    # or better ...
+    # rets_plus_1 = np.random.normal(loc=(1+mu)**dt, scale=(sigma*np.sqrt(dt)), size=(n_steps, n_scenarios))
+    rets_plus_1[0] = 1
+    prices = s_0*pd.DataFrame(rets_plus_1).cumprod()
+    return prices
+
