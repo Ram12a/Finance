@@ -13,9 +13,7 @@
 
 ## Semana 04-10 de noviembre
 
-* Continuar la clase de finanzas y terminar el cuestionario(Tengo que empezar el 119 copiar las funciones y despues aplicarlo a mi portfolio)
-
-* Empezar la clase de machine learning (Primera semana)
+* Empezar la clase de machine learning (Primera semana) y arreglar minibatchMomentum y falta adam
 
 * Crear La clase de cluster de medium
 
